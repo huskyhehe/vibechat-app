@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'daphne',
+    'channels',
+    'chatapp',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,9 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'channels',
-    'chatapp'
 ]
 
 MIDDLEWARE = [
@@ -77,6 +76,14 @@ WSGI_APPLICATION = 'vibechat.wsgi.application'
 
 ASGI_APPLICATION = 'vibechat.asgi.application'
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
