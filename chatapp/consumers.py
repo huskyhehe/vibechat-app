@@ -1,39 +1,38 @@
 import json
 
-from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 
-class ChatConsumer(WebsocketConsumer):
+class ChatConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
         self.room_name = None
         self.room_group_name = None
 
-    def connect(self):
+    async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = "chat_%s" % self.room_name
 
         # Join room group
-        async_to_sync(self.channel_layer.group_add)(
+        await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
 
-        self.accept()
+        await self.accept()
 
-    def disconnect(self, close_code):
+    async def disconnect(self, close_code):
         # Leave room group
-        async_to_sync(self.channel_layer.group_discard)(
+        await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
 
     # Receive message from WebSocket
-    def receive(self, text_data):
+    async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
 
         # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
+        await self.channel_layer.group_send(
             self.room_group_name, {
                 "type": "chat_message",
                 "message": message
@@ -41,10 +40,10 @@ class ChatConsumer(WebsocketConsumer):
         )
 
     # Receive message from room group
-    def chat_message(self, event):
+    async def chat_message(self, event):
         message = event["message"]
         # Send message to WebSocket
-        self.send(text_data=json.dumps({"message": message}))
+        await self.send(text_data=json.dumps({"message": message}))
 
     '''
     self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
@@ -57,11 +56,11 @@ class ChatConsumer(WebsocketConsumer):
         - Group names may only contain alphanumerics, hyphens, underscores, or periods. Therefore this example code will fail on room names that have other characters.
     '''
     '''
-    async_to_sync(self.channel_layer.group_add)(...)        # Joins a group.
-    async_to_sync(self.channel_layer.group_discard)(...)    # Leaves a group.
-    async_to_sync(self.channel_layer.group_send)            # Sends an event to a group.
+    self.channel_layer.group_add(...)        # Joins a group.
+    self.channel_layer.group_discard(...)    # Leaves a group.
+    self.channel_layer.group_send            # Sends an event to a group.
     
-        - The async_to_sync(...) wrapper is required because ChatConsumer is a synchronous WebsocketConsumer but it is calling an asynchronous channel layer method. (All channel layer methods are asynchronous.)
+    - await is used to call asynchronous functions that perform I/O.
     '''
     '''
     self.accept()
