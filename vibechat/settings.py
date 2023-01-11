@@ -86,7 +86,8 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [(os.getenv('REDIS_ENDPOINT_URI'))],
+            'hosts': [('127.0.0.1', 6379)]
+            # 'hosts': [(os.getenv('REDIS_ENDPOINT_URI'))],
         },
     },
 }
@@ -98,6 +99,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'TEST': {
+            'NAME': BASE_DIR / 'db-test.sqlite3',
+        }
     }
 }
 
